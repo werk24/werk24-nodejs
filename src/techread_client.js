@@ -32,7 +32,22 @@ let W24TechreadClient = class W24TechreadClient {
             loop = asyncio.get_event_loop()`.then();
     }
 
-    /** Small helper function that creates a new
+
+    /**
+     * Handle exceptions that occur during the python execution.
+     * @param {Exception} exception
+     *
+     * TODO: The underlying client throws different types of exceptions,
+     *     some of which are useful for the user (e.g, authentication error).
+     *     The NodeJS client should make them available as well.
+     */
+    static handleException(exception) {
+        throw Error(exception);
+    }
+
+
+    /**
+     * Small helper function that creates a new
      * W24TechreadClient from the enviorment info.
      *
      * @param {string} license_path - path to the License file.
@@ -54,7 +69,7 @@ let W24TechreadClient = class W24TechreadClient {
         that.python.ex`
             client = werk24.W24TechreadClient.make_from_env(license_path=${license_path})`
             .then()
-            .catch(that.python.Exception, (e) => this._handleException(e));
+            .catch(that.python.Exception, (e) => W24TechreadClient.handleException(e));
         return that;
     }
 
@@ -75,7 +90,7 @@ let W24TechreadClient = class W24TechreadClient {
     async username() {
         return await this.python`client.username`.catch(
             this.python.Exception,
-            (e) => this._handleException(e)
+            (e) => W24TechreadClient.handleException(e)
         );
     }
 
@@ -281,23 +296,11 @@ let W24TechreadClient = class W24TechreadClient {
         await this.python.ex`
             session = loop.run_until_complete(client.__aenter__())`.catch(
             this.python.Exception,
-            (e) => this._handleException(e)
+            (e) => W24TechreadClient.handleException(e)
         );
         await this.sendRequest(drawingBytes, hooks, modelBytes);
         await this.handleResponses(hooks);
         await this.exitSession();
-    }
-
-    /**
-     * Handle exceptions that occur during the python execution.
-     * @param {Exception} exception
-     *
-     * TODO: The underlying client throws different types of exceptions,
-     *     some of which are useful for the user (e.g, authentication error).
-     *     The NodeJS client should make them available as well.
-     */
-    _handleException(exception) {
-        throw Error(exception);
     }
 
     /**
