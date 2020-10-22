@@ -1,6 +1,6 @@
 {
   "name": "werk24-nodejs",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "main": "index.js",
   "dependencies": {
     "python-bridge": "^1.1.0"
