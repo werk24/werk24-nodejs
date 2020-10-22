@@ -12,7 +12,8 @@
   },
   "scripts": {
     "test": "mocha --timeout 30000 ./__tests__/**/*.js",
-    "itest": "mocha --timeout 30000 ./__int_tests__/**/*.js"
+    "itest": "mocha --timeout 30000 ./__int_tests__/**/*.js",
+    "install": "pip install --upgrade -r requirements.txt"
   },
   "repository": {
     "type": "git",
