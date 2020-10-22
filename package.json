@@ -1,0 +1,28 @@
+{
+  "name": "werk24-nodejs",
+  "version": "0.5.0",
+  "main": "index.js",
+  "dependencies": {
+    "python-bridge": "^1.1.0"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^8.2.0",
+    "supertest": "^5.0.0"
+  },
+  "scripts": {
+    "test": "mocha --timeout 30000 ./__tests__/**/*.js",
+    "itest": "mocha --timeout 30000 ./__int_tests__/**/*.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/werk24/werk24-nodejs.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/werk24/werk24-nodejs/issues"
+  },
+  "homepage": "https://github.com/werk24/werk24-nodejs#readme",
+  "description": ""
+}
