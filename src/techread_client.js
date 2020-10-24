@@ -40,21 +40,7 @@ let W24TechreadClient = class W24TechreadClient {
                 message_dict = json.loads(message.json())
                 return message_dict`
             .then()
-            .catch(this.python.Exception, (e) => W24TechreadClient.handleException(e));
-    }
-
-
-    /**
-     * Handle exceptions that occur during the python execution.
-     * @param {Exception} exception
-     *
-     * TODO: The underlying client throws different types of exceptions,
-     *     some of which are useful for the user (e.g, authentication error).
-     *     The NodeJS client should make them available as well.
-     */
-    static handleException(exception) {
-        console.log(exception)
-        throw Error(exception);
+            .catch(this.python.Exception, (e) => { throw e; });
     }
 
 
@@ -81,7 +67,7 @@ let W24TechreadClient = class W24TechreadClient {
         that.python.ex`
             client = werk24.W24TechreadClient.make_from_env(license_path=${license_path})`
             .then()
-            .catch(that.python.Exception, (e) => W24TechreadClient.handleException(e));
+            .catch(that.python.Exception, (e) => { throw e; });
         return that;
     }
 
@@ -102,7 +88,7 @@ let W24TechreadClient = class W24TechreadClient {
     async username() {
         return await this.python`client.username`.catch(
             this.python.Exception,
-            (e) => W24TechreadClient.handleException(e)
+            (e) => { throw e; }
         );
     }
 
@@ -211,8 +197,7 @@ let W24TechreadClient = class W24TechreadClient {
      * session.
      */
     async exitSession() {
-        await this
-            .python.ex`loop.run_until_complete(client.__aexit__(None, None, None))`;
+        await this.python.ex`_ = loop.run_until_complete(client.__aexit__(None, None, None))`;
     }
 
     /**
@@ -309,7 +294,7 @@ let W24TechreadClient = class W24TechreadClient {
         await this.python.ex`
             session = loop.run_until_complete(client.__aenter__())`.catch(
             this.python.Exception,
-            (e) => W24TechreadClient.handleException(e)
+            (e) => { throw e; }
         );
         await this.sendRequest(drawingBytes, hooks, modelBytes);
         await this.handleResponses(hooks);
