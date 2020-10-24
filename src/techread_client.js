@@ -212,7 +212,7 @@ let W24TechreadClient = class W24TechreadClient {
      */
     async exitSession() {
         await this
-            .python`loop.run_until_complete(client.__aexit__(None, None, None))`;
+            .python.ex`loop.run_until_complete(client.__aexit__(None, None, None))`;
     }
 
     /**
