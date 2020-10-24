@@ -26,10 +26,21 @@ let W24TechreadClient = class W24TechreadClient {
         // import the required python packages
         this.python.ex`
             import asyncio
-            from base64 import b64decode
+            from base64 import b64decode, b64encode
             import json
             import werk24
-            loop = asyncio.get_event_loop()`.then();
+
+            loop = asyncio.get_event_loop()
+
+            def wrap_message(message):
+                try:
+                    message.payload_bytes = b64encode(message.payload_bytes)
+                except:
+                    pass
+                message_dict = json.loads(message.json())
+                return message_dict`
+            .then()
+            .catch(this.python.Exception, (e) => W24TechreadClient.handleException(e));
     }
 
 
@@ -42,6 +53,7 @@ let W24TechreadClient = class W24TechreadClient {
      *     The NodeJS client should make them available as well.
      */
     static handleException(exception) {
+        console.log(exception)
         throw Error(exception);
     }
 
@@ -215,22 +227,23 @@ let W24TechreadClient = class W24TechreadClient {
     async receiveMessage(hooks) {
         let moreMessages = true;
         const message = await this
-            .python`json.loads(loop.run_until_complete(asyncgen.__anext__()).json())`.catch(
-                this.python.Exception,
-                () => {
-                    moreMessages = false;
-                }
-            );
+            .python`wrap_message(loop.run_until_complete(asyncgen.__anext__()))`
+            .catch(this.python.Exception, () => { moreMessages = false; });
 
-        // unless we reached the end of the connection,
-        // we need to pass the information on to the
-        // callHook method
-        if (moreMessages) {
-            await this.processMessage(message, hooks);
+        // if we reached the end, stop processing
+        if (moreMessages == false) { return false; }
+
+        // decode the payload_bytes
+        if (message.payload_bytes != null) {
+            message.payload_bytes = Buffer.from(message.payload_bytes,'base64');
         }
 
+        // we need to pass the information on to the
+        // callHook method
+        await this.processMessage(message, hooks);
+
         // tell the caller whether more data is available
-        return moreMessages;
+        return true;
     }
 
     /**

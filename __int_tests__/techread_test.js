@@ -15,12 +15,11 @@ describe("Integration Test: Techreader", function () {
      *
      * NOTE: this function is cited on the README page
      */
-    it('tests variant measures', async function () {
+    it('tests page thumbnail', async function () {
 
-
-        let messages = [];
 
         // helper function to collect the responses
+        let messages = [];
         function receive(curMessage) { messages.push(curMessage); }
 
         // load the library of available ask types
@@ -30,9 +29,8 @@ describe("Integration Test: Techreader", function () {
         const drawingBytes = fs.readFileSync("./__int_tests__/assets/technical_drawing.png");
 
         // define the hooks that we are interested in
-        const ask = new askLib.W24AskVariantMeasures({ is_training_request: true });
+        const ask = new askLib.W24AskPageThumbnail();
         const hooks = [new werk24.Hook(ask, receive)];
-
 
         // make a new client instance from the environemnt variables
         let client = werk24.W24TechreadClient.makeFromEnv();
