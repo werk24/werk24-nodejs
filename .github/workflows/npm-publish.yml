@@ -1,0 +1,70 @@
+# This workflow will run tests using node and then publish a package to GitHub Packages when a release is created
+# For more information see: https://help.github.com/actions/language-and-framework-guides/publishing-nodejs-packages
+
+name: NMP Publish
+
+on:
+  release:
+    types: [created]
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      
+      - uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12
+      - run: npm ci
+      - run: npm run itest
+        env:
+          W24TECHREAD_AUTH_REGION: ${{ secrets.W24TECHREAD_AUTH_REGION }}
+          W24TECHREAD_AUTH_IDENTITY_POOL_ID: ${{ secrets.W24TECHREAD_AUTH_IDENTITY_POOL_ID }}
+          W24TECHREAD_AUTH_USER_POOL_ID: ${{ secrets.W24TECHREAD_AUTH_USER_POOL_ID }}
+          W24TECHREAD_AUTH_CLIENT_ID: ${{ secrets.W24TECHREAD_AUTH_CLIENT_ID }}
+          W24TECHREAD_AUTH_CLIENT_SECRET: ${{ secrets.W24TECHREAD_AUTH_CLIENT_SECRET }}
+          W24TECHREAD_AUTH_USERNAME: ${{ secrets.W24TECHREAD_AUTH_USERNAME }}
+          W24TECHREAD_AUTH_PASSWORD: ${{ secrets.W24TECHREAD_AUTH_PASSWORD }}
+          W24TECHREAD_SERVER_HTTPS: ${{ secrets.W24TECHREAD_SERVER_HTTPS }}
+          W24TECHREAD_SERVER_WSS: ${{ secrets.W24TECHREAD_SERVER_WSS }}
+          W24TECHREAD_VERSION: ${{ secrets.W24TECHREAD_VERSION }}
+
+  publish-npm:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12
+          registry-url: https://registry.npmjs.org/
+      - run: npm ci
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+
+  publish-gpr:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12
+          registry-url: https://npm.pkg.github.com/
+      - run: npm ci
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
