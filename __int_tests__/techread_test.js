@@ -12,18 +12,16 @@ describe("Integration Test: Techreader", function () {
 
     /**
      * Test whether we can obtain the Variant Measures
+     *
+     * NOTE: this function is cited on the README page
      */
     it('tests variant measures', async function () {
 
 
         let messages = [];
 
-        /**
-         * helper function to collect the responses
-         */
-        function receive(curMessage) {
-            messages.push(curMessage);
-        }
+        // helper function to collect the responses
+        function receive(curMessage) { messages.push(curMessage); }
 
         // load the library of available ask types
         const askLib = await werk24.loadAsks();
