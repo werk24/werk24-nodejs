@@ -29,10 +29,25 @@ let W24TechreadClient = class W24TechreadClient {
             from base64 import b64decode, b64encode
             import json
             import werk24
+            import traceback
+
 
             loop = asyncio.get_event_loop()
 
-            def wrap_message(message):
+            def receive_message(async_gen):
+
+                # obtain the message from the asyncio geneator and print
+                # the debug information on the python terminal if anything
+                # goes wrong. This appears to be more stable than going
+                # through the conversion with complex objects
+                try:
+                    message = loop.run_until_complete(asyncgen.__anext__())
+                except StopAsyncIteration:
+                    raise
+                except BaseException as e:
+                    traceback.print_exc(e)
+                    raise StopAsyncIteration()
+
                 try:
                     message.payload_bytes = b64encode(message.payload_bytes)
                 except:
@@ -212,7 +227,7 @@ let W24TechreadClient = class W24TechreadClient {
     async receiveMessage(hooks) {
         let moreMessages = true;
         const message = await this
-            .python`wrap_message(loop.run_until_complete(asyncgen.__anext__()))`
+            .python`receive_message(asyncgen)`
             .catch(this.python.Exception, () => { moreMessages = false; });
 
         // if we reached the end, stop processing
