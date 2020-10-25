@@ -31,29 +31,44 @@ let W24TechreadClient = class W24TechreadClient {
             import werk24
             import traceback
 
-
             loop = asyncio.get_event_loop()
 
             def receive_message(async_gen):
 
-                # obtain the message from the asyncio geneator and print
-                # the debug information on the python terminal if anything
-                # goes wrong. This appears to be more stable than going
-                # through the conversion with complex objects
+                # obtain the message from the asyncio geneator and
                 try:
                     message = loop.run_until_complete(asyncgen.__anext__())
+
+                # use a new StopAsyncIteration to ensure we are not leaking
+                # complex objects into the exchange. First the bridge throws
+                # an exception if the object cannot be json serialized. Second,
+                # we are just wasting time processing information that is not
+                # used.
                 except StopAsyncIteration:
-                    raise
-                except BaseException as e:
-                    traceback.print_exc(e)
                     raise StopAsyncIteration()
 
+                # print the debug information on the python terminal if anything
+                # goes wrong. This appears to be more stable than going  through
+                # the conversion with complex objects
+                except BaseException:
+                    traceback.print_exc()
+                    raise StopAsyncIteration()
+
+                # the payload needs to made json serializable. We are currently
+                # choosing a simple base64 encoding. We could also go for a base85,
+                # but would need to verify the wide support.
                 try:
                     message.payload_bytes = b64encode(message.payload_bytes)
-                except:
+
+                # if the payload_bytes are not set, b64encode throws a TypeError,
+                # which we will ignore
+                except TypeError as e:
                     pass
-                message_dict = json.loads(message.json())
-                return message_dict`
+
+                # finally we conver the pydantic object into a json dict.
+                # NOTE: using .dict() does not remove nested objects. You'll
+                # need .json()
+                return json.loads(message.json())`
             .then()
             .catch(this.python.Exception, (e) => { throw e; });
     }
