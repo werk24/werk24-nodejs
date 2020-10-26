@@ -55,4 +55,36 @@ describe("Integration Test: Techreader", function () {
         expect(messages.length).to.equal(1);
     });
 
+    /**
+     * Test whether we can send (train) VariantCAD messages to
+     * werk24
+     */
+    it('tests variant cad', async function () {
+
+
+        // helper function to collect the responses
+        let messages = [];
+        function receive(curMessage) { messages.push(curMessage); }
+
+        // load the library of available ask types
+        const askLib = await werk24.loadAsks();
+
+        // load the test file
+        const drawingBytes = fs.readFileSync("./__int_tests__/assets/technical_drawing.png");
+
+        // define the hooks that we are interested in
+        const ask = new askLib.W24AskVariantCAD({ is_training: true });
+        const hooks = [new werk24.Hook(ask, receive)];
+
+        // make a new client instance from the environemnt variables
+        let client = werk24.W24TechreadClient.makeFromEnv();
+        try { await client.readDrawingWithHooks(drawingBytes, hooks);
+        } catch (e) { console.error(e); } finally { client.close(); }
+
+        // If everything worked correctly, we should now have one
+        // message of VariantMesures
+        expect(messages.length).to.equal(0);
+    });
+
+
 });
