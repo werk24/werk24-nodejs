@@ -1,6 +1,6 @@
 {
   "name": "werk24",
-  "version": "0.5.0-1",
+  "version": "0.5.0-4",
   "main": "index.js",
   "dependencies": {
     "minimist": "^1.2.5",
