@@ -2,7 +2,7 @@
 
 
 [![npm](https://img.shields.io/npm/v/werk24)](https://img.shields.io/npm/v/werk24)
-![Tests | nodejs 10.x | 12.x | 14.x](https://github.com/werk24/werk24-nodejs/workflows/Node.js%20CI/badge.svg)
+![Tests | nodejs 10.x | 12.x | 14.x](https://github.com/werk24/werk24-nodejs/workflows/Tests%20%7C%20nodejs%2010.x%20%7C%2012.x%20%7C%2014.x/badge.svg)
 
 - Understand the content of your PDF- and image-based Technical Drawings with a simple API call.
 
