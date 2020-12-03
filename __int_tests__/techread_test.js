@@ -78,7 +78,8 @@ describe("Integration Test: Techreader", function () {
 
         // make a new client instance from the environemnt variables
         let client = werk24.W24TechreadClient.makeFromEnv();
-        try { await client.readDrawingWithHooks(drawingBytes, hooks);
+        try {
+            await client.readDrawingWithHooks(drawingBytes, hooks);
         } catch (e) { console.error(e); } finally { client.close(); }
 
         // If everything worked correctly, we should now have one

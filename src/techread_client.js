@@ -70,7 +70,7 @@ let W24TechreadClient = class W24TechreadClient {
                 # need .json()
                 return json.loads(message.json())`
             .then()
-            .catch(this.python.Exception, (e) => { throw e; });
+            .catch(this.python.Exception, (e) => { console.error(e); });
     }
 
 
@@ -227,7 +227,9 @@ let W24TechreadClient = class W24TechreadClient {
      * session.
      */
     async exitSession() {
-        await this.python.ex`_ = loop.run_until_complete(client.__aexit__(None, None, None))`;
+        await this.python.ex`_ = loop.run_until_complete(client.__aexit__(None, None, None))`
+            .then()
+            .catch(e => { console.error(e) })
     }
 
     /**
@@ -250,7 +252,7 @@ let W24TechreadClient = class W24TechreadClient {
 
         // decode the payload_bytes
         if (message.payload_bytes != null) {
-            message.payload_bytes = Buffer.from(message.payload_bytes,'base64');
+            message.payload_bytes = Buffer.from(message.payload_bytes, 'base64');
         }
 
         // we need to pass the information on to the
@@ -298,11 +300,15 @@ let W24TechreadClient = class W24TechreadClient {
         // with the modelBytes information or not
         if (modelBytes == null) {
             await this.python
-                .ex`asyncgen = session.read_drawing(b64decode(${drawingBytesBase64}), ${asks})`;
+                .ex`asyncgen = session.read_drawing(b64decode(${drawingBytesBase64}), ${asks})`
+                .then()
+                .catch(e => { console.error(e) });
         } else {
             const modelBytesBase64 = modelBytes.toString("base64");
             await this.python
-                .ex`asyncgen = session.read_drawing(b64decode(${drawingBytesBase64}), ${asks}, b64decode(${modelBytesBase64}))`;
+                .ex`asyncgen = session.read_drawing(b64decode(${drawingBytesBase64}), ${asks}, b64decode(${modelBytesBase64}))`
+                .then()
+                .catch(e => { console.error(e) });
         }
     }
 
@@ -317,18 +323,39 @@ let W24TechreadClient = class W24TechreadClient {
      *
      */
     async readDrawingWithHooks(drawingBytes, hooks, modelBytes) {
+
+
+
         // enter a new session of the W24TechreadClient
         // this will start the authentication and get a new
         // token
-        // TODO: entering the session can throw and exception.
-        await this.python.ex`
-            session = loop.run_until_complete(client.__aenter__())`.catch(
-            this.python.Exception,
-            (e) => { throw e; }
-        );
-        await this.sendRequest(drawingBytes, hooks, modelBytes);
-        await this.handleResponses(hooks);
-        await this.exitSession();
+        try {
+            await this.python.ex`session = loop.run_until_complete(client.__aenter__())`
+            await this.sendRequest(drawingBytes, hooks, modelBytes);
+            await this.handleResponses(hooks);
+            await this.exitSession();
+
+        } catch (error) {
+
+            if (error instanceof pythonBridge.PythonBridgeNotConnected) {
+                // If the caller forgets to add the await statement and
+                // works with a try{} finally{} structure, the client is
+                // closed before this function is exectued. The resulting
+                // error message is 'Python bridge is no longer connected.'
+                // This is not very helpful; we thus want to return a nicer
+                // message.
+                // See Issue #1
+
+                console.error("\nERROR: Called readDrawingWithHooks with a closed client. "
+                    + "This typically happens when your finally{} is exectued before "
+                    + "you called this function. Please double-check that your function "
+                    + "calles 'await readDrawingWithHooks'\n")
+            } else {
+                throw error
+            }
+        }
+
+
     }
 
     /**
