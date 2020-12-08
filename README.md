@@ -24,7 +24,7 @@ Npm installation
 
 ## Documentation
 
-See [https://werk24.github.io/docs/](https://werk24.github.io/docs/)
+See [https://werk24.io/docs/index.html](https://werk24.io/docs/index.html)
 
 
 ## Example
