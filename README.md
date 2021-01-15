@@ -21,6 +21,7 @@ The project is persistently improved. Get in touch with us to obtain your API ke
 Npm installation
 
     npm i werk24
+    
 
 ## Documentation
 
